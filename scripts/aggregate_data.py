@@ -1,7 +1,7 @@
 import os
 import json
 
-DATASETS_DIR = "../datasets"
+DATASETS_DIR = "../../raw_dataset"
 OUTPUT_FILE = "src/data.ts"
 
 def main():
@@ -11,16 +11,13 @@ def main():
         print(f"Error: Datasets directory not found at {DATASETS_DIR}")
         return
 
-    # Iterate over department folders
-    for dept_name in sorted(os.listdir(DATASETS_DIR)):
-        dept_path = os.path.join(DATASETS_DIR, dept_name)
-        if not os.path.isdir(dept_path):
+    # Iterate over jsonl files directly
+    for filename in sorted(os.listdir(DATASETS_DIR)):
+        if not filename.endswith(".jsonl"):
             continue
             
-        jsonl_path = os.path.join(dept_path, "dataset.jsonl")
-        if not os.path.exists(jsonl_path):
-            print(f"Skipping {dept_name}: No dataset.jsonl found")
-            continue
+        dept_name = os.path.splitext(filename)[0]
+        jsonl_path = os.path.join(DATASETS_DIR, filename)
             
         print(f"Processing {dept_name}...")
         
@@ -33,15 +30,9 @@ def main():
                         continue
                     try:
                         data = json.loads(line)
-                        # Extract necessary fields
-                        # Input usually contains "37yo f c/o ..." - we can use the first few words as description
-                        # or just "Case {i+1}"
-                        
                         input_text = data.get("input", "")
                         output_text = data.get("output", "")
                         
-                        # Generate a brief description from input
-                        # e.g. "37yo f c/o chest tightness..." -> "37yo f c/o chest tightness"
                         description = input_text[:50] + "..." if len(input_text) > 50 else input_text
                         
                         cases.append({
